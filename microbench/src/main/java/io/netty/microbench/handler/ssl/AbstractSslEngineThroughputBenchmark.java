@@ -27,8 +27,7 @@ import java.nio.ByteBuffer;
 
 public abstract class AbstractSslEngineThroughputBenchmark extends AbstractSslEngineBenchmark {
 
-    //@Param({ "64", "128", "512", "1024", "4096" })
-    @Param("4096")
+    @Param({ "64", "128", "512", "1024", "4096" })
     public int messageSize;
 
     protected ByteBuffer wrapSrcBuffer;

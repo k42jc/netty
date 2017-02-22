@@ -124,8 +124,7 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
     public BufferType bufferType;
 
     // Includes cipher required by HTTP/2
-    //@Param({ "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" })
-    @Param("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")
+    @Param({ "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" })
     public String cipher;
 
     protected SSLEngine clientEngine;
