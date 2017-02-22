@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 
 @State(Scope.Benchmark)
 @Threads(1)
-public class SslEngineUnwrapBenchmark extends AbstractSslEngineThroughputBenchmark {
+public class SslEngineEchoBenchmark extends AbstractSslEngineThroughputBenchmark {
 
     private ByteBuffer unwrapDstBuffer;
 
@@ -40,23 +40,17 @@ public class SslEngineUnwrapBenchmark extends AbstractSslEngineThroughputBenchma
         freeBuffer(unwrapDstBuffer);
     }
 
-    @Override
-    protected void doSetupInvocation() throws Exception {
-        // Wrap one time so we can use the buffer to benchmark unwrap(...)
-        doWrap();
-
-        // Flip it so we can read it in unwrap()
-        wrapDstBuffer.flip();
-
-        // Clear it so we have enough space when calling unwrap()
-        unwrapDstBuffer.clear();
-    }
-
     @Benchmark
-    public SSLEngineResult unwrap() throws SSLException {
-        SSLEngineResult unwrapResult = serverEngine.unwrap(wrapDstBuffer, unwrapDstBuffer);
+    public ByteBuffer wrapUnwrap() throws SSLException {
+        ByteBuffer src = doWrap();
+        src.flip();
 
-        assert checkSslEngineResult(unwrapResult, wrapDstBuffer, unwrapDstBuffer);
-        return unwrapResult;
+        ByteBuffer dst = unwrapDstBuffer;
+        dst.clear();
+
+        SSLEngineResult unwrapResult = serverEngine.unwrap(src, dst);
+
+        assert checkSslEngineResult(unwrapResult, src, dst);
+        return dst;
     }
 }

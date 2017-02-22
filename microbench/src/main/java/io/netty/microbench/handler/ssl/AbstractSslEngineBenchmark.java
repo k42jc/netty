@@ -124,7 +124,8 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
     public BufferType bufferType;
 
     // Includes cipher required by HTTP/2
-    @Param({ "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" })
+    //@Param({ "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" })
+    @Param("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")
     public String cipher;
 
     protected SSLEngine clientEngine;
@@ -165,12 +166,12 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
         freeBuffer(empty);
     }
 
-    protected final void doHandshake() throws SSLException {
+    protected final boolean doHandshake() throws SSLException {
         clientEngine.beginHandshake();
         serverEngine.beginHandshake();
 
-        SSLEngineResult clientResult;
-        SSLEngineResult serverResult;
+        SSLEngineResult clientResult = null;
+        SSLEngineResult serverResult = null;
 
         boolean clientHandshakeFinished = false;
         boolean serverHandshakeFinished = false;
@@ -239,6 +240,8 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
             sTOc.compact();
             cTOs.compact();
         } while (!clientHandshakeFinished || !serverHandshakeFinished);
+        return clientResult.getStatus() == SSLEngineResult.Status.OK &&
+                serverResult.getStatus() == SSLEngineResult.Status.OK;
     }
 
     protected final SSLEngine newClientEngine() {

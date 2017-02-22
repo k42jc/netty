@@ -27,11 +27,12 @@ import java.nio.ByteBuffer;
 
 public abstract class AbstractSslEngineThroughputBenchmark extends AbstractSslEngineBenchmark {
 
-    @Param({ "64", "128", "512", "1024", "4096" })
+    //@Param({ "64", "128", "512", "1024", "4096" })
+    @Param("4096")
     public int messageSize;
 
     protected ByteBuffer wrapSrcBuffer;
-    protected ByteBuffer wrapDstBuffer;
+    private ByteBuffer wrapDstBuffer;
 
     @Setup(Level.Iteration)
     public final void setup() throws Exception {
@@ -47,8 +48,9 @@ public abstract class AbstractSslEngineThroughputBenchmark extends AbstractSslEn
         wrapSrcBuffer.flip();
 
         // Complete the initial TLS handshake.
-        doHandshake();
-
+        if (!doHandshake()) {
+            throw new IllegalStateException();
+        }
         doSetup();
     }
 
@@ -65,22 +67,16 @@ public abstract class AbstractSslEngineThroughputBenchmark extends AbstractSslEn
 
     protected void doTearDown() throws Exception { }
 
-    @Setup(Level.Invocation)
-    public final void setupInvocation() throws Exception {
-        // Reset the src buffer
-        wrapSrcBuffer.position(0).limit(messageSize);
+    protected final ByteBuffer doWrap() throws SSLException {
+        ByteBuffer src = wrapSrcBuffer;
+        src.position(0).limit(messageSize);
 
-        wrapDstBuffer.clear();
+        ByteBuffer dst = wrapDstBuffer;
+        dst.clear();
 
-        doSetupInvocation();
-    }
+        SSLEngineResult wrapResult = clientEngine.wrap(src, dst);
 
-    protected void doSetupInvocation() throws Exception { }
-
-    protected final SSLEngineResult doWrap() throws SSLException {
-        SSLEngineResult wrapResult = clientEngine.wrap(wrapSrcBuffer, wrapDstBuffer);
-
-        assert checkSslEngineResult(wrapResult, wrapSrcBuffer, wrapDstBuffer);
-        return wrapResult;
+        assert checkSslEngineResult(wrapResult, src, dst);
+        return dst;
     }
 }

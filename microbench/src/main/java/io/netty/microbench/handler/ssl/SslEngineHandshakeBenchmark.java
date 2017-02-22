@@ -16,7 +16,9 @@
 package io.netty.microbench.handler.ssl;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -27,20 +29,27 @@ import org.openjdk.jmh.annotations.Threads;
 @Threads(1)
 public class SslEngineHandshakeBenchmark extends AbstractSslEngineBenchmark {
 
-    @Setup(Level.Invocation)
+    @Setup(Level.Iteration)
     public void setupInvocation() {
+        // Init an engine one time and create the buffers needed for an handshake so we can use them in the benchmark
         initEngines();
         initHandshakeBuffers();
+        destroyEngines();
     }
 
-    @TearDown(Level.Invocation)
+    @TearDown(Level.Iteration)
     public void teardownInvocation() {
-        destroyEngines();
         destroyHandshakeBuffers();
     }
 
     @Benchmark
-    public void handshake() throws Exception {
-        doHandshake();
+    @BenchmarkMode(Mode.AverageTime)
+    public boolean handshake() throws Exception {
+        initEngines();
+        boolean ok = doHandshake();
+        assert ok;
+        // We explicit not call destroyEngines() and let the GC handle this as its a NOOP for JDK but not for
+        // OPENSSL implementation and we not want to have it impact the handshake times.
+        return ok;
     }
 }
