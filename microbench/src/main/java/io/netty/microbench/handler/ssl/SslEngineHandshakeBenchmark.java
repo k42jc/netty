@@ -47,9 +47,8 @@ public class SslEngineHandshakeBenchmark extends AbstractSslEngineBenchmark {
     public boolean handshake() throws Exception {
         initEngines();
         boolean ok = doHandshake();
+        destroyEngines();
         assert ok;
-        // We explicit not call destroyEngines() and let the GC handle this as its a NOOP for JDK but not for
-        // OPENSSL implementation and we not want to have it impact the handshake times.
         return ok;
     }
 }

@@ -48,6 +48,12 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
             SslProvider sslProvider() {
                 return SslProvider.OPENSSL;
             }
+        },
+        OPENSSL_REFCNT {
+            @Override
+            SslProvider sslProvider() {
+                return SslProvider.OPENSSL_REFCNT;
+            }
         };
         private final SslContext clientContext = newClientContext();
         private final SslContext serverContext = newServerContext();
@@ -215,9 +221,7 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
                 assert sTOc.position() - sTOcPos == clientResult.bytesConsumed();
                 assert clientAppReadBuffer.position() - clientAppReadBufferPos == clientResult.bytesProduced();
 
-                if (isHandshakeFinished(clientResult)) {
-                    clientHandshakeFinished = true;
-                }
+                clientHandshakeFinished = isHandshakeFinished(clientResult);
             } else {
                 assert !sTOc.hasRemaining();
             }
@@ -229,9 +233,7 @@ public class AbstractSslEngineBenchmark extends AbstractMicrobenchmark {
                 assert cTOs.position() - cTOsPos == serverResult.bytesConsumed();
                 assert serverAppReadBuffer.position() - serverAppReadBufferPos == serverResult.bytesProduced();
 
-                if (isHandshakeFinished(serverResult)) {
-                    serverHandshakeFinished = true;
-                }
+                serverHandshakeFinished = isHandshakeFinished(serverResult);
             } else {
                 assert !cTOs.hasRemaining();
             }
